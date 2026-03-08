@@ -1,83 +1,41 @@
-const db = require("../db/database");
+const pool = require("../db/database");
 
-exports.getOneNote = (id, user_id) => {
-    return new Promise((resolve, reject) => {
-        db.get(
-            `SELECT * FROM notes WHERE id = ? AND user_id = ?`,
-            [id, user_id],
-            (err, row) => {
-                if (err) return reject(err);
-                
-                resolve(row);
-            }
-        );
-    })
+exports.getOneNote = async (id, user_id) => {
+    const res = await pool.query(
+        `SELECT * FROM notes WHERE id = $1 AND user_id = $2`,
+        [id, user_id]
+    );
+    return res.rows[0];
 };
 
-exports.getAllNotes = (user_id) => {
-    return new Promise((resolve, reject) => {
-        db.all(
-            `SELECT * FROM notes WHERE user_id = ?`,
-            [user_id],
-            (err, rows) => {
-                if (err) return reject(err);
-                
-                resolve(rows);
-            }
-        );
-    })
+exports.getAllNotes = async (user_id) => {
+    const res = await pool.query(
+        `SELECT * FROM notes WHERE user_id = $1`,
+        [user_id]
+    );
+    return res.rows;
 };
 
-exports.createNote = (title, content, user_id) => {
-    return new Promise((resolve, reject) => {
-        db.run(
-            `INSERT INTO notes (title, content, user_id) VALUES (?, ?, ?)`,
-            [title, content, user_id],
-            function (err) {
-                if (err) return reject(err);
-    
-                resolve({
-                    id: this.lastID,
-                    title,
-                    content,
-                });
-            }
-        );
-    })
+exports.createNote = async (title, content, user_id) => {
+    const res = await pool.query(
+        `INSERT INTO notes (title, content, user_id) VALUES ($1, $2, $3) RETURNING *`,
+        [title, content, user_id]
+    );
+    return { id: res.rows[0].id, title: res.rows[0].title, content: res.rows[0].content }
 };
 
-exports.updateNote = (id, title, content, user_id) => {
-    return new Promise((resolve, reject) => {
-        db.run(
-            `UPDATE notes SET title = ?, content = ? WHERE id = ? AND user_id = ?`,
-            [title, content, id, user_id],
-            function (err) {
-                if (err) return reject(err);
-
-                if (this.changes === 0) {
-                    return resolve(null);
-                }
-    
-                resolve({
-                    id: id,
-                    title: title,
-                    content: content,
-                });
-            }
-        );
-    })
+exports.updateNote = async (id, title, content, user_id) => {
+    const res = await pool.query(
+        `UPDATE notes SET title = $1, content = $2 WHERE id = $3 AND user_id = $4 RETURNING *`,
+        [title, content, id, user_id]
+    );
+    return { id: res.rows[0].id, title: res.rows[0].title, content: res.rows[0].content }
 };
 
-exports.deleteNote = (id, user_id) => {
-    return new Promise((resolve, reject) => {
-        db.run(
-            `DELETE FROM notes WHERE id = ? AND user_id = ?`,
-            [id, user_id],
-            function (err) {
-                if (err) return reject(err);
-    
-                resolve(this.changes);
-            }
-        );
-    })
+exports.deleteNote = async (id, user_id) => {
+    const res = await pool.query(
+        `DELETE FROM notes WHERE id = $1 AND user_id = $2`,
+        [id, user_id]
+    );
+    return res.rowCount;
 };

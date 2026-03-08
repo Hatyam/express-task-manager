@@ -1,28 +1,15 @@
-const db = require("../db/database");
+const pool = require("../db/database");
 
-exports.findByEmail = (email) => {
-    return new Promise((resolve, reject) => {
-        db.get(`SELECT * FROM users WHERE email = ?`,
-            [email],
-            (err, user) => {
-                if (err) return reject(err);
-                resolve(user);
-            }
-        )
-    })
+exports.findByEmail = async (email) => {
+    const res = await pool.query(`SELECT * FROM users WHERE email = $1`,
+        [email]
+    );
+    return res.rows[0];
 }
 
-exports.registerUser = (email, hashedPassword) => {
-    return new Promise((resolve, reject) => {
-        db.run(`INSERT INTO users (email, password) VALUES (? , ?)`,
-            [email, hashedPassword],
-            function (err) {
-                if (err) return reject(err);
-                resolve({
-                    id: this.lastID,
-                    email: email
-                })
-            }
-        )
-    })
+exports.registerUser = async (email, hashedPassword) => {
+    const res = await pool.query(`INSERT INTO users (email, password) VALUES ($1 , $2) RETURNING *`,
+        [email, hashedPassword],
+    );
+    return { id: res.rows[0].id, email: res.rows[0].email}
 }

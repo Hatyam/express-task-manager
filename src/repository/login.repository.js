@@ -7,3 +7,11 @@ exports.findByEmail = async (email) => {
     );
     return res.rows[0]
 }
+
+exports.createRefreshToken = async (user_id, refreshToken) => {
+    await pool.query(
+        `INSERT INTO refresh_tokens (user_id, token_hash, created_at, expires_at) 
+        VALUES ($1, $2, NOW(), NOW() + INTERVAL '7 days')`,
+        [user_id, refreshToken]
+    );
+}

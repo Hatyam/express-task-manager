@@ -3,18 +3,18 @@ const router = express.Router();
 
 const notesController = require("../controllers/notes.controller");
 const { validateNote } = require("../middlewares/validateNote");
-const { authMiddleware } = require("../middlewares/authMiddleware");
+const { accessMiddleware } = require("../middlewares/accessMiddleware");
 
 router.use(express.json());
 
-router.get("/:id", authMiddleware, notesController.getOneNote);
+router.get("/:id", accessMiddleware, notesController.getOneNote);
 
-router.get("/", authMiddleware, notesController.getAllNotes);
+router.get("/", accessMiddleware, notesController.getAllNotes);
 
-router.post("/", authMiddleware, validateNote, notesController.createNote);
+router.post("/", accessMiddleware, validateNote, notesController.createNote);
 
-router.put("/:id", authMiddleware, validateNote, notesController.updateNote);
+router.put("/:id", accessMiddleware, validateNote, notesController.updateNote);
 
-router.delete("/:id", authMiddleware, notesController.deleteNote);
+router.delete("/:id", accessMiddleware, notesController.deleteNote);
 
 module.exports = router;

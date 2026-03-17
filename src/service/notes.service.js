@@ -10,8 +10,17 @@ exports.getOneNote = async (id ,user_id) => {
     return note;
 }
 
-exports.getAllNotes = async (user_id) => {
-    const notes = await notesRepository.getAllNotes(user_id);
+exports.getAllNotes = async (user_id, page, limit, q) => {
+    let pageSql = Number(page);
+    let limitSql = Number(limit);
+
+    pageSql = pageSql || 1;
+    limitSql = limitSql || 10;
+
+    pageSql = pageSql < 1 ? 1 : pageSql;
+    limitSql = Math.min(limitSql, 50);
+    
+    const notes = await notesRepository.getAllNotes(user_id, page, limit, q);
 
     return notes;
 }

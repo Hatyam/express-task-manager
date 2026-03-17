@@ -8,11 +8,20 @@ exports.getOneNote = async (id, user_id) => {
     return res.rows[0];
 };
 
-exports.getAllNotes = async (user_id) => {
-    const res = await pool.query(
-        `SELECT * FROM notes WHERE user_id = $1`,
-        [user_id]
-    );
+exports.getAllNotes = async (user_id, page, limit, q) => {
+    let sqlParametrs = [user_id];
+    let query = `SELECT * FROM notes WHERE user_id = $${sqlParametrs.length}`;
+    if (q && q.trim() !== "") {
+        sqlParametrs.push(`%${q}%`);
+        query += ` AND (title ILIKE $${sqlParametrs.length} OR content ILIKE $${sqlParametrs.length})`;
+    }
+    sqlParametrs.push(limit);
+    query += ` ORDER BY created_at DESC LIMIT $${sqlParametrs.length}`; 
+    
+    sqlParametrs.push((page - 1) * limit);
+    query += ` OFFSET $${sqlParametrs.length}`; 
+
+    const res = await pool.query(query, sqlParametrs);
     return res.rows;
 };
 

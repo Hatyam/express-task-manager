@@ -12,7 +12,9 @@ exports.getOneNote = async (req, res, next) => {
 
 exports.getAllNotes = async (req, res, next) => {
     try {
-        const notes = await notesService.getAllNotes(req.user.id);
+        const {page, limit, q} = req.query;
+
+        const notes = await notesService.getAllNotes(req.user.id, page, limit, q);
 
         res.status(200).json(notes);
     } catch (err) {

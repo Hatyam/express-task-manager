@@ -1,6 +1,10 @@
 const notesRepository = require("../repository/notes.repository");
 
 exports.getOneNote = async (id ,user_id) => {
+    const redisRes = await notesRepository.redisGetOneNote(id);
+    if (redisRes)
+        return redisRes;
+
     const note = await notesRepository.getOneNote(id, user_id);
 
     if (!note) {
@@ -20,7 +24,7 @@ exports.getAllNotes = async (user_id, page, limit, q) => {
     pageSql = pageSql < 1 ? 1 : pageSql;
     limitSql = Math.min(limitSql, 50);
     
-    const notes = await notesRepository.getAllNotes(user_id, page, limit, q);
+    const notes = await notesRepository.getAllNotes(user_id, pageSql, limitSql, q);
 
     return notes;
 }

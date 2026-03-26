@@ -1,10 +1,18 @@
 const pool = require("../db/database");
+const redis = require("../db/redisConnect");
+
+exports.redisGetOneNote = async (id) => {
+    const redisRes = await redis.get(`note:${id.toString()}`);
+    return JSON.parse(redisRes);
+}
 
 exports.getOneNote = async (id, user_id) => {
     const res = await pool.query(
         `SELECT * FROM notes WHERE id = $1 AND user_id = $2`,
         [id, user_id]
     );
+
+    await redis.set(`note:${id}`, JSON.stringify(res.rows[0]), "EX", 10);
     return res.rows[0];
 };
 

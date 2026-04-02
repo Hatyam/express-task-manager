@@ -7,3 +7,9 @@ exports.deleteUser = async (id) => {
 
     return res.rowCount;
 }
+
+exports.getAllUsers = async () => {
+    const res = await pool.query(`SELECT id, email, role FROM users`, []);
+
+    return res.rows;
+}

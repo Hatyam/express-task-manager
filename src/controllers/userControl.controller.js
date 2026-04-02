@@ -9,3 +9,13 @@ exports.deleteUser = async (req, res, next) => {
         next(err);
     }
 }
+
+exports.getAllUsers = async (req, res, next) => {
+    try {
+        result = await userControlService.getAllUsers();
+
+        res.status(200).json(result);
+    } catch (err) {
+        next(err);
+    }
+}

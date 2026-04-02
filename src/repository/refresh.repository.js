@@ -7,11 +7,11 @@ exports.checkRefresh = async (hashedRefreshToken) => {
     return res.rows;
 };
 
-exports.findEmailById = async (id) => {
+exports.findUserById = async (id) => {
     const res = await pool.query(`SELECT * FROM users WHERE id = $1`,
         [id],
     )
-    return res.rows[0].email;
+    return res.rows[0];
 }
 
 exports.updateRefreshToken = async (

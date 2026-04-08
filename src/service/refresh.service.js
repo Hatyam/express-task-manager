@@ -16,7 +16,13 @@ exports.updateRefreshToken = async (lastRefreshToken) => {
 
     if (!refreshTokenFromBase.length)
         throw { status: 404, message: "Неверный токен" };
-
+    
+    if (refreshTokenFromBase[0].revoked === true) {
+        await refreshRepository.revokeAllUserTokens(
+            refreshTokenFromBase[0].user_id);
+        throw { status: 401, message: "Токен устарел" };
+    }
+        
     const newRefreshToken = crypto.randomBytes(64).toString("hex");
 
     const newHashedRefreshToken = crypto
@@ -32,12 +38,14 @@ exports.updateRefreshToken = async (lastRefreshToken) => {
 
     const payload = {
         id: refreshTokenFromBase[0].user_id,
-        email: await refreshRepository.findUserlById(
+        email: await refreshRepository.findUserById(
             refreshTokenFromBase[0].user_id
         ).email,
-        role: await refreshRepository.findUserlById(
+        role: await refreshRepository.findUserById(
             refreshTokenFromBase[0].user_id
         ).role,
+        token_version:await refreshRepository.findUserById(
+            refreshTokenFromBase[0].user_id).token_version ,
     };
 
     const newAccessToken = jwt.sign(payload, SECRET, {

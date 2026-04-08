@@ -20,7 +20,7 @@ exports.login = async (email, password) => {
         throw { status: 404, message: "Неверный пароль" };
     }
 
-    const accessToken = jwt.sign({ id: user.id, email: user.email, role: user.role }, SECRET, {
+    const accessToken = jwt.sign({ id: user.id, email: user.email, role: user.role, token_version: user.token_version }, SECRET, {
         expiresIn: "30m",
     });
 

@@ -2,7 +2,7 @@ const pool = require("../db/database");
 
 exports.findByEmail = async (email) => {
     const res = await pool.query(
-        `SELECT * FROM users WHERE email = $1 `,
+        `SELECT * FROM users WHERE email = $1 AND deleted = false `,
         [email],
     );
     return res.rows[0]

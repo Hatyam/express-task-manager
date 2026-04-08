@@ -9,3 +9,9 @@ exports.getAllUsers = async () => {
     const res = await userControlRepository.getAllUsers();
     return res;
 }
+
+exports.recoverUser = async (id) => {
+    const res = await userControlRepository.recoverUser(id);
+    if (res === 0) throw { status: 404, message: "Пользователь не найден" };
+    return {message: "Пользователь и его заметки восстановлены"};
+}

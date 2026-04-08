@@ -2,7 +2,7 @@ const pool = require("../db/database");
 
 exports.checkRefresh = async (hashedRefreshToken) => {
     const res = await pool.query(`SELECT * FROM refresh_tokens WHERE token_hash = $1 AND 
-        revoked = false AND expires_at > NOW()`,
+        expires_at > NOW()`,
     [hashedRefreshToken]);
     return res.rows;
 };
@@ -32,3 +32,9 @@ exports.updateRefreshToken = async (
     
     return;
 };
+
+exports.revokeAllUserTokens = async (user_id) => {
+    await pool.query(`UPDATE refresh_tokens SET revoked = true WHERE user_id = $1`,
+        [user_id]
+    )
+}

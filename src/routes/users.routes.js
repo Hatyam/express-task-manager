@@ -9,4 +9,6 @@ router.delete("/:id", accessMiddleware, adminMiddleware, userControl.deleteUser)
 
 router.get("/", accessMiddleware, adminMiddleware, userControl.getAllUsers);
 
+router.post("/recoverUser/:id", accessMiddleware, adminMiddleware, userControl.recoverUser);
+
 module.exports = router

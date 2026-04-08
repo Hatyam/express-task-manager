@@ -12,7 +12,18 @@ exports.deleteUser = async (req, res, next) => {
 
 exports.getAllUsers = async (req, res, next) => {
     try {
-        result = await userControlService.getAllUsers();
+        const result = await userControlService.getAllUsers();
+
+        res.status(200).json(result);
+    } catch (err) {
+        next(err);
+    }
+}
+
+exports.recoverUser = async (req, res, next) => {
+    try {
+        const {id} = req.params;
+        const result = await userControlService.recoverUser(id);
 
         res.status(200).json(result);
     } catch (err) {

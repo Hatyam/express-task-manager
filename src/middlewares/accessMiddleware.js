@@ -1,9 +1,10 @@
 import dotenv from "dotenv";
 dotenv.config();
+import { findByEmail } from "../repository/login.repository";
 const jwt = require("jsonwebtoken");
 const SECRET = process.env.ACCESS_TOKEN_SECRET;
 
-exports.accessMiddleware = (req, res, next) => {
+exports.accessMiddleware = async (req, res, next) => {
     const authHeader = req.headers.authorization;
 
     if (!authHeader) {
@@ -18,6 +19,10 @@ exports.accessMiddleware = (req, res, next) => {
 
     try {
         const decoded = jwt.verify(token, SECRET);
+        const token_version_DB = await findByEmail(decoded.email);
+        if (decoded.token_version !== token_version_DB.token_version) {
+            return res.status(401).json({ message: "Токен устарел" });
+        }
         req.user = decoded;
         next();
     } catch (err) {

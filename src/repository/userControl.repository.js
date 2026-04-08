@@ -1,7 +1,16 @@
 const pool = require("../db/database");
 
 exports.deleteUser = async (id) => {
-    const res = await pool.query(`DELETE FROM users WHERE id = $1`,
+    const res = await pool.query(
+        `UPDATE users SET deleted = true, token_version = token_version + 1 WHERE id = $1`,
+        [id]
+    );
+
+    await pool.query(`UPDATE notes SET deleted = true WHERE user_id = $1`,
+        [id]
+    )
+
+    await pool.query(`UPDATE refresh_tokens SET revoked = true WHERE user_id = $1`,
         [id]
     )
 
@@ -9,7 +18,17 @@ exports.deleteUser = async (id) => {
 }
 
 exports.getAllUsers = async () => {
-    const res = await pool.query(`SELECT id, email, role FROM users`, []);
+    const res = await pool.query(`SELECT id, email, role, deleted FROM users`, []);
 
     return res.rows;
+}
+
+exports.recoverUser = async (id) => {
+    const res = await pool.query(`UPDATE users SET deleted = false WHERE id = $1`,
+        [id]
+    );
+
+    await pool.query(`UPDATE notes SET deleted = false WHERE user_id = $1`,
+        [id]
+    );
 }

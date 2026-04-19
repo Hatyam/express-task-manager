@@ -3,9 +3,14 @@ import redis from "../db/redisConnect";
 import { UpdateNoteParams } from "../types/notes.types";
 
 export const redisGetOneNote = async (id: number) => {
-    const redisRes = await redis.get(`note:${id.toString()}`);
+    const redisRes = await redis.get(`note:${id}`);
+
+    if (!redisRes) {
+        return null;
+    }
+
     return JSON.parse(redisRes);
-}
+};
 
 export const getOneNote = async (id: number, user_id: number) => {
     const res = await pool.query(

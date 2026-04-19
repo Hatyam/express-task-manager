@@ -1,12 +1,13 @@
-const pool = require("../db/database");
-const redis = require("../db/redisConnect");
+import pool from "../db/database";
+import redis from "../db/redisConnect";
+import { UpdateNoteParams } from "../types/notes.types";
 
-exports.redisGetOneNote = async (id) => {
+export const redisGetOneNote = async (id: number) => {
     const redisRes = await redis.get(`note:${id.toString()}`);
     return JSON.parse(redisRes);
 }
 
-exports.getOneNote = async (id, user_id) => {
+export const getOneNote = async (id: number, user_id: number) => {
     const res = await pool.query(
         `SELECT * FROM notes WHERE id = $1 AND user_id = $2`,
         [id, user_id]
@@ -16,8 +17,8 @@ exports.getOneNote = async (id, user_id) => {
     return res.rows[0];
 };
 
-exports.getAllNotes = async (user_id, page, limit, q) => {
-    let sqlParametrs = [user_id];
+export const getAllNotes = async (user_id: number, page: number, limit: number, q: string | undefined) => {
+    let sqlParametrs: (number | string)[] = [user_id];
     let query = `SELECT * FROM notes WHERE user_id = $${sqlParametrs.length}`;
     if (q && q.trim() !== "") {
         sqlParametrs.push(`%${q}%`);
@@ -33,7 +34,7 @@ exports.getAllNotes = async (user_id, page, limit, q) => {
     return res.rows;
 };
 
-exports.createNote = async (title, content, user_id) => {
+export const createNote = async (title: string, content: string, user_id: number) => {
     const res = await pool.query(
         `INSERT INTO notes (title, content, user_id) VALUES ($1, $2, $3) RETURNING *`,
         [title, content, user_id]
@@ -41,7 +42,7 @@ exports.createNote = async (title, content, user_id) => {
     return { id: res.rows[0].id, title: res.rows[0].title, content: res.rows[0].content }
 };
 
-exports.updateNote = async (id, title, content, user_id) => {
+export const updateNote = async ({id, title, content, user_id}: UpdateNoteParams) => {
     const res = await pool.query(
         `UPDATE notes SET title = $1, content = $2 WHERE id = $3 AND user_id = $4 RETURNING *`,
         [title, content, id, user_id]
@@ -49,7 +50,7 @@ exports.updateNote = async (id, title, content, user_id) => {
     return { id: res.rows[0].id, title: res.rows[0].title, content: res.rows[0].content }
 };
 
-exports.deleteNote = async (id, user_id) => {
+export const deleteNote = async (id: number, user_id: number) => {
     const res = await pool.query(
         `DELETE FROM notes WHERE id = $1 AND user_id = $2`,
         [id, user_id]
@@ -57,7 +58,7 @@ exports.deleteNote = async (id, user_id) => {
     return res.rowCount;
 };
 
-exports.getAllUsersNotes = async () => {
+export const getAllUsersNotes = async () => {
     const res = await pool.query(
         `SELECT * FROM notes`, []
     );

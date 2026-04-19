@@ -1,6 +1,10 @@
-const loginService = require("../service/login.service")
+import { Request, Response, NextFunction } from "express";
+import {LoginRequestBody} from "../types/auth.types";
+import * as loginService from "../service/login.service";
 
-exports.login = async (req, res, next) => {
+export const login = async (req: Request<{}, {}, LoginRequestBody>,
+     res: Response, 
+     next: NextFunction) => {
     try {
         const { email, password } = req.body;
 

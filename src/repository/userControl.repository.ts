@@ -1,6 +1,6 @@
-const pool = require("../db/database");
+import pool from "../db/database";
 
-exports.deleteUser = async (id) => {
+export const deleteUser = async (id: number) => {
     const res = await pool.query(
         `UPDATE users SET deleted = true, token_version = token_version + 1 WHERE id = $1`,
         [id]
@@ -17,13 +17,13 @@ exports.deleteUser = async (id) => {
     return res.rowCount;
 }
 
-exports.getAllUsers = async () => {
+export const getAllUsers = async () => {
     const res = await pool.query(`SELECT id, email, role, deleted FROM users`, []);
 
     return res.rows;
 }
 
-exports.recoverUser = async (id) => {
+export const recoverUser = async (id: number) => {
     const res = await pool.query(`UPDATE users SET deleted = false WHERE id = $1`,
         [id]
     );
@@ -31,4 +31,6 @@ exports.recoverUser = async (id) => {
     await pool.query(`UPDATE notes SET deleted = false WHERE user_id = $1`,
         [id]
     );
+
+    return res.rowCount;
 }

@@ -5,7 +5,7 @@ const app = express();
 import cookieParser from "cookie-parser";
 import notesRoutes from "./routes/notes.routes";
 import authRoutes from "./routes/auth.routes";
-import errorMiddleware from "./middlewares/errorMiddleware";
+import { errorMiddleware } from "./middlewares/errorMiddleware";
 import usersRoutes from "./routes/users.routes";
 
 app.use(express.json());

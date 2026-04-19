@@ -1,11 +1,17 @@
 import dotenv from "dotenv";
 dotenv.config();
-const crypto = require("crypto");
-const jwt = require("jsonwebtoken");
-const refreshRepository = require("../repository/refresh.repository");
-const SECRET = process.env.ACCESS_TOKEN_SECRET;
+import crypto from "crypto";
+import jwt from "jsonwebtoken";
+import * as refreshRepository from "../repository/refresh.repository";
+import { User } from "../types/user.types";
+import { RefreshTokenReturn } from "../types/refresh.types";
+const SECRET = process.env.ACCESS_TOKEN_SECRET as string;
 
-exports.updateRefreshToken = async (lastRefreshToken) => {
+export const updateRefreshToken = async (lastRefreshToken: string | undefined): Promise<RefreshTokenReturn> => {
+    if (!lastRefreshToken) {
+        throw {status: 404, message: "Токен не передан"};
+    }
+
     const hashedLastRefreshToken = crypto
         .createHash("sha256")
         .update(lastRefreshToken)
@@ -36,16 +42,15 @@ exports.updateRefreshToken = async (lastRefreshToken) => {
         refreshTokenFromBase[0].user_id
     );
 
+    const userByRefreshToken: User = await refreshRepository.findUserById(
+        refreshTokenFromBase[0].user_id
+    );
+
     const payload = {
-        id: refreshTokenFromBase[0].user_id,
-        email: await refreshRepository.findUserById(
-            refreshTokenFromBase[0].user_id
-        ).email,
-        role: await refreshRepository.findUserById(
-            refreshTokenFromBase[0].user_id
-        ).role,
-        token_version:await refreshRepository.findUserById(
-            refreshTokenFromBase[0].user_id).token_version ,
+        id: userByRefreshToken.id,
+        email: userByRefreshToken.email,
+        role: userByRefreshToken.role,
+        token_version: userByRefreshToken.token_version,
     };
 
     const newAccessToken = jwt.sign(payload, SECRET, {

@@ -1,23 +1,23 @@
-const pool = require("../db/database");
+import pool from "../db/database";
 
-exports.checkRefresh = async (hashedRefreshToken) => {
+export const checkRefresh = async (hashedRefreshToken: string) => {
     const res = await pool.query(`SELECT * FROM refresh_tokens WHERE token_hash = $1 AND 
         expires_at > NOW()`,
     [hashedRefreshToken]);
     return res.rows;
 };
 
-exports.findUserById = async (id) => {
+export const findUserById = async (id: number) => {
     const res = await pool.query(`SELECT * FROM users WHERE id = $1`,
         [id],
     )
     return res.rows[0];
 }
 
-exports.updateRefreshToken = async (
-    lastHashedRefreshToken,
-    newHashedRefreshToken,
-    user_id
+export const updateRefreshToken = async (
+    lastHashedRefreshToken: string,
+    newHashedRefreshToken: string,
+    user_id: number
 ) => {
     const newTokenId = await pool.query(
         `INSERT INTO refresh_tokens (user_id, token_hash, expires_at) 
@@ -33,7 +33,7 @@ exports.updateRefreshToken = async (
     return;
 };
 
-exports.revokeAllUserTokens = async (user_id) => {
+export const revokeAllUserTokens = async (user_id: number) => {
     await pool.query(`UPDATE refresh_tokens SET revoked = true WHERE user_id = $1`,
         [user_id]
     )

@@ -1,6 +1,7 @@
-const notesRepository = require("../repository/notes.repository");
+import * as notesRepository from "../repository/notes.repository";
+import { UpdateNoteParams } from "../types/notes.types";
 
-exports.getOneNote = async (id ,user_id) => {
+export const getOneNote = async (id: number, user_id: number) => {
     const redisRes = await notesRepository.redisGetOneNote(id);
     if (redisRes)
         return redisRes;
@@ -14,7 +15,12 @@ exports.getOneNote = async (id ,user_id) => {
     return note;
 }
 
-exports.getAllNotes = async (user_id, page, limit, q) => {
+export const getAllNotes = async (
+    user_id: number,
+    page: string | undefined,
+    limit: string | undefined,
+    q: string | undefined
+) => {
     let pageSql = Number(page);
     let limitSql = Number(limit);
 
@@ -23,18 +29,23 @@ exports.getAllNotes = async (user_id, page, limit, q) => {
 
     pageSql = pageSql < 1 ? 1 : pageSql;
     limitSql = Math.min(limitSql, 50);
-    
-    const notes = await notesRepository.getAllNotes(user_id, pageSql, limitSql, q);
+
+    const notes = await notesRepository.getAllNotes(
+        user_id,
+        pageSql,
+        limitSql,
+        q
+    );
 
     return notes;
-}
+};
 
-exports.createNote = async (title, content, user_id) => {
+export const createNote = async (title: string, content: string, user_id: number) => {
     return await notesRepository.createNote(title, content, user_id);
 }
 
-exports.updateNote = async (id, title, content, user_id) => {
-    const updatedNote = await notesRepository.updateNote(id, title, content, user_id);
+export const updateNote = async ({id, title, content, user_id}: UpdateNoteParams) => {
+    const updatedNote = await notesRepository.updateNote({id, title, content, user_id});
 
     if (!updatedNote) {
         throw {status: 404, message: "Заметка не найдена"};
@@ -43,7 +54,7 @@ exports.updateNote = async (id, title, content, user_id) => {
     return updatedNote;
 }
 
-exports.deleteNote = async (id, user_id) => {
+export const deleteNote = async (id: number, user_id: number) => {
     const deletedNotes = await notesRepository.deleteNote(id, user_id);
 
     if (!deletedNotes) {
@@ -53,12 +64,8 @@ exports.deleteNote = async (id, user_id) => {
     return "Заметка удалена";
 }
 
-exports.getAllUsersNotes = async () => {
-    try {
-        const result = await notesRepository.getAllUsersNotes();
+export const getAllUsersNotes = async () => {
+    const result = await notesRepository.getAllUsersNotes();
 
-        return result;
-    } catch (err) {
-        next(err);
-    }
+    return result;
 }

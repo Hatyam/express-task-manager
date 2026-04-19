@@ -1,9 +1,11 @@
-const refreshService = require("../service/refresh.service");
-const ACCESS_SECRET = process.env.ACCESS_TOKEN_SECRET;
+import * as refreshService from "../service/refresh.service";
+import { CookieRefreshToken } from "../types/refresh.types";
+import {Request, Response, NextFunction} from 'express';
+const ACCESS_SECRET = process.env.ACCESS_TOKEN_SECRET as string;
 
-exports.refresh = async (req, res, next) => {
+export const refresh = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const { refresh_token } = req.cookies;
+        const { refresh_token }: CookieRefreshToken = req.cookies;
         
         const {newRefreshToken, newAccessToken} = await refreshService.updateRefreshToken(refresh_token);
 

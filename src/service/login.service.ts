@@ -1,14 +1,16 @@
 import dotenv from "dotenv";
 dotenv.config();
-const crypto = require("crypto");
-const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
-const userRepository = require("../repository/login.repository");
 
-const SECRET = process.env.ACCESS_TOKEN_SECRET;
+import crypto from "crypto";
+import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
+import * as userRepository from "../repository/login.repository";
+import { User } from "../types/user.types";
 
-exports.login = async (email, password) => {
-    const user = await userRepository.findByEmail(email);
+const SECRET = process.env.ACCESS_TOKEN_SECRET as string;
+
+export const login = async (email: string, password: string) => {
+    const user: User | null = await userRepository.findByEmail(email);
 
     if (!user) {
         throw { status: 404, message: "Пользователь не найден" };
@@ -23,7 +25,7 @@ exports.login = async (email, password) => {
     const accessToken = jwt.sign({ id: user.id, email: user.email, role: user.role, token_version: user.token_version }, SECRET, {
         expiresIn: "30m",
     });
-
+    
     const refreshToken = crypto.randomBytes(64).toString("hex");
     const hashedRefreshToken = crypto.createHash("sha256").update(refreshToken).digest("hex");
 

@@ -1,152 +1,180 @@
-# 🧠 Task Manager API
+🧠 Task Manager Microservices
 
-REST API для управления пользователями и заметками с авторизацией, refresh-токенами и системой ролей.
+Микросервисное backend-приложение для управления пользователями и заметками, построенное на Node.js + TypeScript с использованием API Gateway, PostgreSQL, Redis и Docker.
 
-Проект полностью реализован на TypeScript и построен по слоистой архитектуре:
-**controllers → services → repositories**
+🚀 Архитектура проекта
+Client
+   ↓
+API Gateway
+   ↓
+──────────────────────────
+│                        │
+Identity Service     Notes Service
+│                        │
+PostgreSQL             PostgreSQL
+│
+Redis
+🛠 Стек технологий
+Backend
+Node.js
+Express
+TypeScript
+Database & Cache
+PostgreSQL
+Redis
+DevOps
+Docker
+Docker Compose
+Authentication
+JWT Access Token
+Refresh Token Rotation
+httpOnly Cookies
+Token Versioning
+Logout Everywhere
+📦 Сервисы
+🔐 identity-service
 
----
+Сервис аутентификации и управления пользователями.
 
-## 🚀 Функциональность
+Возможности
+регистрация
+логин
+refresh token
+JWT авторизация
+role-based access
+soft delete пользователей
+восстановление пользователя
+rate limiting
+token version rotation
+Основные маршруты
+POST /auth/register
+POST /auth/login
+POST /auth/refresh
 
-* 🔐 Регистрация и авторизация пользователей (JWT)
-* ♻️ Refresh токены с хранением в БД (hash + rotation)
-* 🚫 Инвалидация токенов через `token_version`
-* 🔎 Детект повторного использования refresh-токена (re-use detection)
-* 📝 CRUD для заметок
-* 👥 Ролевая модель (user / admin)
-* 🔒 Ownership (доступ только к своим данным)
-* 🗑 Soft delete пользователей и заметок
-* 🔎 Поиск и пагинация заметок
-* ⚡ Rate limiting (Redis)
-* 🛡 Middleware для авторизации и прав доступа
+GET /users
+DELETE /users/:id
+POST /users/recover/:id
+📝 notes-service
 
----
+Сервис управления заметками.
 
-## 🏗 Архитектура
+Возможности
+CRUD заметок
+заметки пользователей
+admin endpoints
+internal service-to-service endpoints
+soft delete / recovery
+Основные маршруты
+GET /notes
+GET /notes/:id
 
-```id="9n2v6m"
-src/
- ├── controllers/
- ├── services/
- ├── repositories/
- ├── middlewares/
- ├── routes/
- ├── types/
- ├── db/
-```
+POST /notes
+PUT /notes/:id
+DELETE /notes/:id
 
----
+GET /notes/getAllUsersNotes
+Internal endpoints
+POST /internal/notes/delete-by-user
+POST /internal/notes/recover-by-user
+🌐 api-gateway
 
-## 🧰 Технологии
+Единая точка входа для клиента.
 
-* Node.js
-* Express
-* TypeScript
-* PostgreSQL
-* Redis
-* JWT
-* bcrypt
+Что делает gateway
+проксирует запросы
+скрывает внутренние сервисы
+передает JWT и cookies
+объединяет API
+изолирует сервисы от клиента
+🐳 Docker
 
----
+Все сервисы запускаются в контейнерах через Docker Compose.
 
-## ⚙️ Установка
-
-```bash id="p9jw6g"
+Контейнеры
+api_gateway
+identity_service
+notes_service
+task_manager_postgres
+task_manager_redis
+⚙️ Запуск проекта
+1. Клонирование репозитория
 git clone <repo_url>
 cd task-manager
-npm install
-```
+2. Запуск Docker
+docker compose up --build
+🌍 Доступные сервисы
+Сервис	URL
+API Gateway	http://localhost:3000
+PostgreSQL	localhost:5432
+Redis	localhost:6379
+🔑 ENV переменные
+identity-service
+PORT=3000
 
----
+ACCESS_TOKEN_SECRET=secretaccess
+REFRESH_TOKEN_SECRET=secretrefresh
 
-## 🔑 Переменные окружения
-
-```env id="0w5x4w"
-PORT=5000
-
-ACCESS_TOKEN_SECRET=your_secret
-
-DB_USER=your_user
-DB_HOST=localhost
-DB_NAME=task_manager
+DB_USER=postgres
+DB_PASSWORD=postgres
+DB_HOST=postgres
 DB_PORT=5432
+DB_NAME=identity_db
 
-REDIS_HOST=127.0.0.1
+REDIS_HOST=redis
 REDIS_PORT=6379
-```
+notes-service
+PORT=3000
 
----
+ACCESS_TOKEN_SECRET=secretaccess
 
-## ▶️ Запуск
+DB_USER=postgres
+DB_PASSWORD=postgres
+DB_HOST=postgres
+DB_PORT=5432
+DB_NAME=notes_db
 
-### Development
+REDIS_HOST=redis
+REDIS_PORT=6379
+api-gateway
+PORT=3000
+🔐 Авторизация
 
-```bash id="r4i6pn"
-npm run dev
-```
+Проект использует:
 
-### Production
+JWT Access Token
+Refresh Token
+httpOnly cookies
+token rotation
+token version invalidation
+🧪 Тестирование
 
-```bash id="fq2dpk"
-npm run build
-npm start
-```
+Для тестирования использовался Postman.
 
----
+Коллекции
+auth
+users
+notes
+📌 Особенности проекта
+✔ Микросервисная архитектура
 
-## 📡 Основные эндпоинты
+Сервисы изолированы и взаимодействуют через HTTP.
 
-### Auth
+✔ API Gateway
 
-* `POST /auth/register`
-* `POST /auth/login`
-* `POST /auth/refresh`
+Клиент работает только с gateway.
 
----
+✔ Dockerized environment
 
-### Notes
+Полностью контейнеризированное окружение.
 
-* `GET /notes`
-* `GET /notes/:id`
-* `POST /notes`
-* `PUT /notes/:id`
-* `DELETE /notes/:id`
+✔ Redis integration
 
----
+Используется для хранения refresh token и rate limiting.
 
-### Users (admin only)
+✔ Soft Delete
 
-* `GET /users`
-* `DELETE /users/:id`
-* `POST /users/recoverUser/:id`
+Пользователи и заметки могут быть восстановлены.
 
----
+✔ Internal APIs
 
-## 🔐 Авторизация
-
-```id="v3l2ka"
-Authorization: Bearer <access_token>
-```
-
-Refresh токен хранится в httpOnly cookie.
-
----
-
-## 🧠 Особенности реализации
-
-* Access token содержит `token_version` → позволяет инвалидировать все токены пользователя
-* Refresh токены хранятся в БД в виде hash
-* Реализован механизм **refresh token rotation**
-* Детект повторного использования refresh токена:
-
-  * если старый refresh токен используется повторно → все токены пользователя инвалидируются
-* Ownership проверяется на уровне сервисов (`user_id`)
-* Rate limiting реализован через Redis (IP + IP/email)
-* Middleware расширяет `Request` (`req.user`)
-
----
-
-## 👨‍💻 Автор
-
-Bogdan Denisev
+Реализованы internal endpoints для взаимодействия сервисов.

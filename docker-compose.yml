@@ -1,59 +1,64 @@
-version: "3.9"
-
 services:
-  app:
-    build: .
-    container_name: task_manager_app
+
+  identity-service:
+    build: ./identity-service
+    container_name: identity_service
     ports:
-      - "3000:3000"
+      - "3001:3000"
     depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
+      - postgres
+      - redis
     environment:
       PORT: 3000
-
-      ACCESS_TOKEN_SECRET: secret
-
+      ACCESS_TOKEN_SECRET: secretaccess
       DB_USER: postgres
       DB_PASSWORD: postgres
-      DB_HOST: postgres
+      DB_HOST: task_manager_postgres
       DB_NAME: task_manager
       DB_PORT: 5432
-
-      REDIS_HOST: redis
+      REDIS_HOST: task_manager_redis
       REDIS_PORT: 6379
+
+  notes-service:
+    build: ./notes-service
+    container_name: notes_service
+    ports:
+      - "3002:3000"
+    depends_on:
+      - postgres
+      - redis
+      - identity-service
+    environment:
+      PORT: 3000
+      ACCESS_TOKEN_SECRET: secretaccess
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_HOST: task_manager_postgres
+      DB_NAME: task_manager
+      DB_PORT: 5432
+      REDIS_HOST: task_manager_redis
+      REDIS_PORT: 6379
+      AUTH_SERVICE_URL: http://identity-service:3000
 
   postgres:
     image: postgres:15
     container_name: task_manager_postgres
     restart: always
     environment:
-      POSTGRES_DB: task_manager
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: task_manager
     ports:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
       - ./src/db/init.sql:/docker-entrypoint-initdb.d/init.sql
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d task_manager"]
-      interval: 5s
-      timeout: 5s
-      retries: 10
 
   redis:
     image: redis:7
     container_name: task_manager_redis
     ports:
       - "6379:6379"
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 5s
-      timeout: 3s
-      retries: 10
 
 volumes:
   pgdata:

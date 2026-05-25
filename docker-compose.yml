@@ -1,58 +1,13 @@
 services:
-
-  identity-service:
-    build: ./identity-service
-    container_name: identity_service
-    ports:
-      - "3001:3000"
-    depends_on:
-      - postgres
-      - redis
-    environment:
-      PORT: 3000
-      ACCESS_TOKEN_SECRET: secretaccess
-      DB_USER: postgres
-      DB_PASSWORD: postgres
-      DB_HOST: task_manager_postgres
-      DB_NAME: task_manager
-      DB_PORT: 5432
-      REDIS_HOST: task_manager_redis
-      REDIS_PORT: 6379
-
-  notes-service:
-    build: ./notes-service
-    container_name: notes_service
-    ports:
-      - "3002:3000"
-    depends_on:
-      - postgres
-      - redis
-      - identity-service
-    environment:
-      PORT: 3000
-      ACCESS_TOKEN_SECRET: secretaccess
-      DB_USER: postgres
-      DB_PASSWORD: postgres
-      DB_HOST: task_manager_postgres
-      DB_NAME: task_manager
-      DB_PORT: 5432
-      REDIS_HOST: task_manager_redis
-      REDIS_PORT: 6379
-      AUTH_SERVICE_URL: http://identity-service:3000
-
   postgres:
     image: postgres:15
     container_name: task_manager_postgres
-    restart: always
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: task_manager
     ports:
       - "5432:5432"
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-      - ./src/db/init.sql:/docker-entrypoint-initdb.d/init.sql
 
   redis:
     image: redis:7
@@ -60,5 +15,54 @@ services:
     ports:
       - "6379:6379"
 
-volumes:
-  pgdata:
+  identity-service:
+    build:
+      context: ./identity-service
+    container_name: identity_service
+    expose:
+      - "3000"
+    environment:
+      ACCESS_TOKEN_SECRET: secretaccess
+      PORT: 3000
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_NAME: task_manager
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    depends_on:
+      - postgres
+      - redis
+
+  notes-service:
+    build:
+      context: ./notes-service
+    container_name: notes_service
+    expose:
+      - "3000"
+    environment:
+      ACCESS_TOKEN_SECRET: secretaccess
+      PORT: 3000
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_NAME: task_manager
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    depends_on:
+      - postgres
+      - redis
+
+  api-gateway:
+    build:
+      context: ./api-gateway
+    container_name: api_gateway
+    ports:
+      - "3000:3000"
+    environment:
+      PORT: 3000
+    depends_on:
+      - identity-service
+      - notes-service
